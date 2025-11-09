@@ -1,0 +1,59 @@
+/** Your spawn creates new units called "creeps" by its method spawnCreep. Usage of this method is described in the documentation. Each creep has a name and certain body parts that give it various skills.
+
+You can address your spawn by its name the following way: Game.spawns['Spawn1'].
+
+Create a worker creep with the body array [WORK,CARRY,MOVE] and name Harvester1 (the name is important for the tutorial!). You can type the code in the console yourself or copy & paste the hint below.**/
+
+Game.spawns['Spawn1'].spawnCreep( [WORK, CARRY, MOVE], 'Harvester1' );
+
+/** How to get it to go to a node and return when full till it dies. **/
+
+module.exports.loop = function () {
+    var creep = Game.creeps['Harvester1'];
+
+    if(creep.store.getFreeCapacity() > 0) {
+        var sources = creep.room.find(FIND_SOURCES);
+        if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(sources[0]);
+        }
+    }
+    else {
+        if( creep.transfer(Game.spawns['Spawn1'], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE ) {
+            creep.moveTo(Game.spawns['Spawn1']);
+        }
+    }
+}
+
+/* Add a module */
+
+var roleHarvester = {
+
+    /** @param {Creep} creep **/
+    run: function(creep) {
+	    if(creep.store.getFreeCapacity() > 0) {
+            var sources = creep.room.find(FIND_SOURCES);
+            if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(sources[0]);
+            }
+        }
+        else {
+            if(creep.transfer(Game.spawns['Spawn1'], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(Game.spawns['Spawn1']);
+            }
+        }
+	}
+};
+
+module.exports = roleHarvester;
+
+/* Add this to main */
+
+var roleHarvester = require('role.harvester');
+
+module.exports.loop = function () {
+
+    for(var name in Game.creeps) {
+        var creep = Game.creeps[name];
+        roleHarvester.run(creep);
+    }
+}
